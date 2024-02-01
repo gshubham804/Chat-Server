@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const User = require("../models/user");
 const filterObj = require("../utils/filterObj");
 const { promisify } = require("util");
+const mailService = require("../services/mailer");
 
 const signToken = (userId) => {
   jwt.sign({ userId }, process.env.JWT_SECRET);
@@ -69,6 +70,13 @@ exports.sendOTP = async (req, res, next) => {
   });
 
   // TODO >> Send mail
+
+  mailService.sendEmail({
+    from: "techbtechblog@gmail.com",
+    to: "gshubham@gmail.com",
+    subject: "OTP for login",
+    text: `Your OTP is ${new_otp}. This is valid for 10 mins.`,
+  });
 
   res.status(200).json({
     status: "success",
@@ -147,19 +155,18 @@ exports.protect = async (req, res, next) => {
 
   let token;
 
-  if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
     token = req.headers.authorization.split(" ")[1];
-
-
-  }
-  else if(req.cookies.jwt){
-    token = req.cookies.jwt;  
-  }
-  else{
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  } else {
     req.status(400).json({
-      status:"error",
-      message:"You are not logged In! Please log in to get access",
-    })
+      status: "error",
+      message: "You are not logged In! Please log in to get access",
+    });
     return;
   }
 
@@ -170,20 +177,20 @@ exports.protect = async (req, res, next) => {
   // Check  if user still exist
 
   const this_user = await User.findById(decoded.userId);
-  if(!this_user){
+  if (!this_user) {
     res.status(400).json({
-      status:"error",
-      message:"The user doesn't exist"
-    })
+      status: "error",
+      message: "The user doesn't exist",
+    });
   }
 
   // check if user changed their password after token was issued
 
-  if(this_user.changedPasswordAfter(decoded.iat)){
+  if (this_user.changedPasswordAfter(decoded.iat)) {
     res.status(400).json({
-      status:"error",
-      message:"User recently updated their password! Please login again"
-    })
+      status: "error",
+      message: "User recently updated their password! Please login again",
+    });
   }
 
   req.user = this_user;

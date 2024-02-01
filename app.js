@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const xss = require("xss");
 const cors = require("cors");
 const app = express();
+const routes = require("./routes/index");
 
 app.use(
   express.urlencoded({
@@ -41,6 +42,8 @@ const limiter = rateLimit({
 
 app.use("/chatapp", limiter);
 
+app.use(routes)
+
 module.exports = app;
 
 
@@ -54,6 +57,7 @@ module.exports = app;
 // app.route()
 // Route parameters
 // Route handlers
+// protected route and also check in luster backend repo
 
 
 
