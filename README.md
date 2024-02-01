@@ -6,6 +6,18 @@ It is a comprehensive exploration of backend development, where I deep dive into
 
 ## Table of Contents
 
+- [Built with](#built-with)
+- [Features](#features)
+- [Used Packages](#used-packages)
+- [The Process](#the-process)
+- [What I Learned](#what-i-learned)
+- [Running the Project](#running-the-project)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Usage](#usage)
+- [Screenshots](#screenshots)
+
+
 
 ## Built with
 
@@ -110,7 +122,7 @@ Now, let's kick off the project! Follow these steps:
 
 - Start the server.
     ```bash
-    npm start
+    node server.js
     ```
 
 ## Screenshots
