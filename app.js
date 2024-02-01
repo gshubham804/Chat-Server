@@ -42,3 +42,18 @@ const limiter = rateLimit({
 app.use("/chatapp", limiter);
 
 module.exports = app;
+
+
+
+
+
+
+// express-generator
+// what is the use of views in this folder structure
+// express.Router
+// app.route()
+// Route parameters
+// Route handlers
+
+
+

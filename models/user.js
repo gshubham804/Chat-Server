@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -28,6 +29,9 @@ const userSchema = new mongoose.Schema({
     },
   },
   password: {
+    type: String,
+  },
+  passwordConfirm: {
     type: String,
   },
   passwordChangedAt: {
@@ -59,14 +63,23 @@ const userSchema = new mongoose.Schema({
 
 // Hooks >> PreHooks >> PostHooks
 
-userSchema.pre("save",async function (next){
+userSchema.pre("save", async function (next) {
   // only run this function if otp is updated or modified
-  if(!this.isModified("otp")) return next();
+  if (!this.isModified("otp")) return next();
 
   // encrypt otp >> hash the otp with the cost of 12 [8,16]
-this.otp = await bcrypt.hash(this.otp,12)
-next();
-})
+  this.otp = await bcrypt.hash(this.otp, 12);
+  next();
+});
+
+userSchema.pre("save", async function (next) {
+  // only run this function if password is updated or modified
+  if (!this.isModified("password")) return next();
+
+  // encrypt password >> hash the password with the cost of 12 [8,16]
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
 
 userSchema.methods.correctPassword = async function (
   candidatePassword, // 1234
@@ -80,6 +93,22 @@ userSchema.methods.correctOTP = async function (
   userOTP // first decrypt the otp then compare with entered otp
 ) {
   return await bcrypt.compare(candidateOTP, userOTP);
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
+
+userSchema.methods.changedPasswordAfter = function (timeStamp) {
+  return timeStamp < this.passwordChangedAt;
 };
 
 const User = new mongoose.model("User", userSchema);
