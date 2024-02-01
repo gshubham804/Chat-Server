@@ -131,3 +131,17 @@ Now, let's kick off the project! Follow these steps:
 
 ![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
 
+
+
+## Contact
+
+Feel free to reach out if you have any questions, suggestions, or just want to connect!
+
+- **LinkedIn:** [Shubham Gupta](https://www.linkedin.com/in/shubhamgupta804/)
+- **Twitter:** [@jointoshubham](https://twitter.com/jointoshubham)
+
+Your feedback is highly valued, and I look forward to hearing from you!
+
+
+
+
