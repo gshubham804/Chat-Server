@@ -1,10 +1,11 @@
 
 # Chat-Server
 
-It is a comprehensive exploration of backend development, where I delved into the intricacies of building APIs, crafting middleware, defining routes, and unraveling numerous other enlightening concepts.
+It is a comprehensive exploration of backend development, where I deep dive into the details of building APIs, crafting middleware, defining routes, and understanding numerous other enlightening concepts.
 
 
 ## Table of Contents
+
 
 ## Built with
 
@@ -67,3 +68,52 @@ Follow these steps to organize your project structure:
 6. **Create `services` folder:** For specific services (e.g., mailing, notification), create a folder named `services`. Inside it, you can organize different functions based on the services provided.
 
 7. **Create `routes` folder:** For setting up routing, create a folder called `routes`. Inside it, create files such as `auth.js` and `user.js` to define routes and route-specific logic.
+## What I Learned
+
+In the course of developing Chat Server, I acquired a wealth of knowledge and skills:
+
+- **Backend Environment Setup:** Understanding the foundational steps to set up a backend environment as a beginner.
+- **Backend Essentials:** Crafting APIs, implementing middleware, and defining routes to create a seamless backend architecture.
+- **Express.js Proficiency:** Building a robust and efficient Express.js server to handle diverse functionalities.
+- **Express Methods and Concepts:** Exploring various Express methods and concepts, delving into the extensive Express documentation.
+- **Static File Serving:** Learning how to serve static files using Express for a more dynamic web application.
+- **WebSocket Communication:** Mastering the implementation of real-time, bidirectional communication using Socket.io.
+
+# Running the Project
+
+## Prerequisites
+
+Before you get started, ensure your machine is equipped with the following tools:
+
+- [Node.js](https://nodejs.org/)
+- [npm](https://www.npmjs.com/) (Node Package Manager)
+
+## Installation
+
+1. Clone the repository or download the source code.
+
+    ```bash
+    https://github.com/gshubham804/Chat-Server.git
+
+    cd chat-server
+    ```
+
+2. Install the project dependencies.
+
+    ```bash
+    npm install
+    ```
+
+## Usage
+
+Now, let's kick off the project! Follow these steps:
+
+- Start the server.
+    ```bash
+    npm start
+    ```
+
+## Screenshots
+
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
