@@ -63,7 +63,9 @@ Explore the packages that form the backbone of this project.
 - **mongoose:** Elegant MongoDB object modeling for Node.js applications.
 - **morgan:** HTTP request logger middleware for Express applications.
 - **otp-generator:** Generates one-time passwords (OTPs) for enhanced authentication security.
-- **xss:** Guards against cross-site scripting (XSS) attacks by sanitizing user input.## The Process
+- **xss:** Guards against cross-site scripting (XSS) attacks by sanitizing user input.
+
+## The Process
 
 Follow these steps to organize your project structure:
 
