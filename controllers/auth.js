@@ -2,19 +2,21 @@
 // status:"",message:"",
 // })
 
-const jwt = require("jwtwebtoken");
+const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const crypto = require("crypto");
 const User = require("../models/user");
 const filterObj = require("../utils/filterObj");
 const { promisify } = require("util");
-const mailService = require("../services/mailer");
+const otp = require("../Templates/Mail/otp");
+const sendTransactionalEmail = require("../services/mailer");
 
 const signToken = (userId) => {
   jwt.sign({ userId }, process.env.JWT_SECRET);
 };
 
 // Register a new user
+
 exports.register = async (req, res, next) => {
   const { firstName, lastName, email, password } = req.body;
   const filterBody = filterObj(
@@ -29,7 +31,7 @@ exports.register = async (req, res, next) => {
   const existing_user = await User.findOne({ email: email });
 
   if (existing_user && existing_user.verified) {
-    res.status(400).json({
+   return res.status(400).json({
       status: "error",
       message: "Email is already in use, Please Login  ",
     });
@@ -52,36 +54,47 @@ exports.register = async (req, res, next) => {
   }
 };
 
+// Send OTP
+
 exports.sendOTP = async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId } = req;
   const new_otp = otpGenerator.generate(6, {
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
     specialChars: false,
   });
 
+  console.log(new_otp,"otp");
   // OTP expiry time calculation
 
   const otp_expiry_time = Date.now() + 10 * 60 * 1000; //10 min after otp is sent
 
-  await User.findByIdAndUpdate(userId, {
-    otp: new_otp,
-    otp_expiry_time,
+  const user = await User.findByIdAndUpdate(userId, {
+    otp_expiry_time:otp_expiry_time,
   });
 
-  // TODO >> Send mail
+  user.otp = new_otp;
 
-  mailService.sendEmail({
-    from: "techbtechblog@gmail.com",
-    to: "gshubham@gmail.com",
-    subject: "OTP for login",
-    text: `Your OTP is ${new_otp}. This is valid for 10 mins.`,
-  });
+  await user.save({ new: true, validateModifiedOnly: true });
 
+
+ // TODO >> Send mail
+
+sendTransactionalEmail(user.firstName,new_otp,user.email)
+.then((status) => {
+  console.log(`Email sent successfully! Status: ${status}`);
   res.status(200).json({
     status: "success",
     message: "OTP sent successfully!",
   });
+})
+.catch((status) => {
+  console.error(`Failed to send email. Status: ${status}`);
+  res.status(500).json({
+    status: "failed",
+    message: "Failed to send OTP email.",
+  });
+});
 };
 
 exports.verifyOTP = async (req, res, next) => {
@@ -95,9 +108,16 @@ exports.verifyOTP = async (req, res, next) => {
   });
 
   if (!user) {
-    res.status(400).json({
+    return res.status(400).json({
       status: "error",
       message: "Email is invalid or OTP expired",
+    });
+  }
+
+  if (user.verified) {
+    return res.status(400).json({
+      status: "error",
+      message: "Email is already verified",
     });
   }
 
@@ -106,6 +126,7 @@ exports.verifyOTP = async (req, res, next) => {
       status: "error",
       message: "OTP is incorrect",
     });
+    return;
   }
 
   // OTP is correct
@@ -122,6 +143,8 @@ exports.verifyOTP = async (req, res, next) => {
   });
 };
 
+// User Login
+
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -129,9 +152,19 @@ exports.login = async (req, res, next) => {
       status: "error",
       message: "Both email and password are required",
     });
+    return; 
   }
 
   const userDoc = await User.findOne({ email: email }).select("+password");
+
+  if (!userDoc || !userDoc.password) {
+    res.status(400).json({
+      status: "error",
+      message: "Incorrect password",
+    });
+    return;
+  }
+
   if (
     !userDoc ||
     !(await userDoc.correctPassword(password, userDoc.password))
@@ -140,6 +173,7 @@ exports.login = async (req, res, next) => {
       status: "error",
       message: "Email or password is incorrect",
     });
+    return;
   }
 
   const token = signToken(userDoc._id);
@@ -162,12 +196,12 @@ exports.protect = async (req, res, next) => {
     token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
-  } else {
-    req.status(400).json({
-      status: "error",
-      message: "You are not logged In! Please log in to get access",
-    });
-    return;
+  }
+
+  if (!token) {
+    return next(
+      new AppError(`You are not logged in! Please log in to get access.`, 401)
+    );
   }
 
   // verification of token
@@ -176,21 +210,22 @@ exports.protect = async (req, res, next) => {
 
   // Check  if user still exist
 
-  const this_user = await User.findById(decoded.userId);
+  const this_user = await User.findById(decoded.id);
   if (!this_user) {
-    res.status(400).json({
-      status: "error",
-      message: "The user doesn't exist",
-    });
+    return next(
+      new AppError(
+        "The user belonging to this token does no longer exists.",
+        401
+      )
+    );
   }
 
   // check if user changed their password after token was issued
 
   if (this_user.changedPasswordAfter(decoded.iat)) {
-    res.status(400).json({
-      status: "error",
-      message: "User recently updated their password! Please login again",
-    });
+    return next(
+      new AppError("User recently changed password! Please log in again.", 401)
+    );
   }
 
   req.user = this_user;
@@ -201,20 +236,17 @@ exports.forgotPassword = async (req, res, next) => {
   // Get user's email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    res.status(400).json({
-      status: "error",
-      message: "There is no user with given email address",
-    });
-    return;
+    return next(new AppError("There is no user with email address.", 404));
   }
 
   // Generate the random reset token
   const resetToken = user.createPasswordResetToken();
-  const resetURL = `https://tawk.com/auth/reset-password/?code=${resetToken}`;
-
+  await user.save({ validateBeforeSave: false });
+  
   try {
     // send email with reset URL
-
+    
+    const resetURL = `https://tawk.com/auth/reset-password/?code=${resetToken}`;
     res.status(200).json({
       status: "success",
       message: "Reset Password link sent to Email",
@@ -225,11 +257,10 @@ exports.forgotPassword = async (req, res, next) => {
 
     await user.save({ validateBeforeSave: false });
 
-    res.status(500).json({
-      status: "error",
-      message:
-        "There was an error in sending the email, Please try again later.",
-    });
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
   }
 };
 
@@ -237,7 +268,7 @@ exports.resetPassword = async (req, res, next) => {
   // Get user based on token
   const hashedToken = crypto
     .createHash("sha256")
-    .update(req.params.token)
+    .update(req.body.token)
     .digest("hex");
   const user = await User.findOne({
     passwordResetToken: hashedToken,
@@ -247,11 +278,7 @@ exports.resetPassword = async (req, res, next) => {
   // If token has expired or submission is out of time window
 
   if (!user) {
-    res.status(400).json({
-      status: "error",
-      message: "Token is invalid or expired",
-    });
-    return;
+    return next(new AppError("Token is invalid or has expired", 400));
   }
 
   // Update user password password and set expiryToken  and reset to undefined
@@ -267,10 +294,7 @@ exports.resetPassword = async (req, res, next) => {
 
   // Send the email to user informing about password change
 
-  const token = signToken(user._id);
   res.status(200).json({
     status: "success",
-    message: "Password reseted successfully",
-    token,
-  });
+  })
 };

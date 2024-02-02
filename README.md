@@ -49,7 +49,7 @@ It is a comprehensive exploration of backend development, where I deep dive into
 
 Explore the packages that form the backbone of this project.
 
-- **@sendgrid/mail:** A reliable package for sending emails using SendGrid's API.
+- **@getbrevo/brevo:** A reliable package for sending emails using Brevo's API.
 - **bcryptjs:** Ensures secure and efficient password hashing for enhanced user security.
 - **body-parser:** Simplifies handling of incoming request bodies in Express applications.
 - **cors:** Enables Cross-Origin Resource Sharing for secure and controlled API access.

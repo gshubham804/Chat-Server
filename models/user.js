@@ -22,10 +22,10 @@ const userSchema = new mongoose.Schema({
         return String(email)
           .toLowerCase()
           .match(
-            /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
           );
       },
-      message: (props) => `Email ${props.value} is invalid!`,
+      message: (props) => `Email (${props.value}) is invalid!`,
     },
   },
   password: {
@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
+    default: Date.now(),
   },
   updatedAt: {
     type: Date,
@@ -54,7 +55,7 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   otp: {
-    type: Number,
+    type: String,
   },
   otp_expiry_time: {
     type: Date,
@@ -65,19 +66,26 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre("save", async function (next) {
   // only run this function if otp is updated or modified
-  if (!this.isModified("otp")) return next();
+  if (!this.isModified("otp") || !this.otp) return next();
 
   // encrypt otp >> hash the otp with the cost of 12 [8,16]
-  this.otp = await bcrypt.hash(this.otp, 12);
+  this.otp = await bcrypt.hash(this.otp.toString(), 12);
   next();
 });
 
 userSchema.pre("save", async function (next) {
   // only run this function if password is updated or modified
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
 
   // encrypt password >> hash the password with the cost of 12 [8,16]
   this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew || !this.password) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -107,8 +115,16 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-userSchema.methods.changedPasswordAfter = function (timeStamp) {
-  return timeStamp < this.passwordChangedAt;
+userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
+  if (this.passwordChangedAt) {
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimeStamp < changedTimeStamp;
+  }
+  // FALSE MEANS NOT CHANGED
+  return false;
 };
 
 const User = new mongoose.model("User", userSchema);

@@ -1,40 +1,35 @@
-const sgMail = require("@sendgrid/mail");
+const brevo = require('@getbrevo/brevo');
 const dotenv = require("dotenv");
-
 dotenv.config({ path: "../config.env" });
+const otpTemplate = require("../Templates/Mail/otp");
 
-sgMail.setApiKey(process.env.SG_KEY);
+function sendTransactionalEmail(username, otp, senderEmail) {
+  return new Promise((resolve, reject) => {
+    let apiInstance = new brevo.TransactionalEmailsApi();
+    let apiKey = apiInstance.authentications['apiKey'];
+    apiKey.apiKey = process.env.BREVO_KEY;
 
-const sendSGMail = async ({
-  recipient,
-  sender,
-  subject,
-  text,
-  html,
-  attachments,
-}) => {
-  try {
-    const from = sender || "techbtechblog@gmail.com";
+    let sendSmtpEmail = new brevo.SendSmtpEmail();
 
-    const msg = {
-      to: recipient,
-      from: from,
-      subject,
-      html: html,
-      text: text, //  when we write only plain text then we use it
-      attachments,
-    };
+    sendSmtpEmail.subject ="Your verification code for Chat-Server" ;
+    sendSmtpEmail.htmlContent = otpTemplate(username,otp);
+    sendSmtpEmail.sender = { "name": "Chat-Server", "email": "techbtechblog@gmail.com" };
+    sendSmtpEmail.to = [
+      { "email": senderEmail, "name": username }
+    ];
+    sendSmtpEmail.replyTo = { "email": "techbtechblog@gmail.com", "name": "Chat-Server" };
+    sendSmtpEmail.headers = { "Chat-Server": "unique-id-1234" };
+    sendSmtpEmail.params = { "parameter": "My param value", "subject": "common subject" };
 
-    return sgMail.send(msg);
-  } catch (error) {
-    console.log(error);
-  }
-};
+    apiInstance.sendTransacEmail(sendSmtpEmail).then(function (data) {
+      console.log('API called successfully. Returned data: ' + JSON.stringify(data));
+      resolve('success');
+    }, function (error) {
+      console.error(error);
+      reject('failed');
+    });
+  });
+}
 
-exports.sendEmail = async (args) => {
-  if (process.env.NODE_ENV === "development") {
-    return new Promise.resolve();
-  } else {
-    return sendSGMail(args);
-  }
-};
+// Export the function
+module.exports = sendTransactionalEmail;
