@@ -58,6 +58,9 @@ module.exports = app;
 // Route parameters
 // Route handlers
 // protected route and also check in luster backend repo
+// learn how to make sending file in postman
+// improved email otp html template
+
 
 
 

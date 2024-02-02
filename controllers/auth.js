@@ -11,10 +11,7 @@ const { promisify } = require("util");
 const otp = require("../Templates/Mail/otp");
 const sendTransactionalEmail = require("../services/mailer");
 
-const signToken = (userId) => {
-  jwt.sign({ userId }, process.env.JWT_SECRET);
-};
-
+const signToken = (userId) => jwt.sign({ userId }, process.env.JWT_SECRET);
 // Register a new user
 
 exports.register = async (req, res, next) => {
@@ -73,7 +70,7 @@ exports.sendOTP = async (req, res, next) => {
     otp_expiry_time:otp_expiry_time,
   });
 
-  user.otp = new_otp;
+  user.otp = new_otp.toString();
 
   await user.save({ new: true, validateModifiedOnly: true });
 
@@ -139,7 +136,7 @@ exports.verifyOTP = async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "OTP verified successfully!",
-    token,
+    token:token,
   });
 };
 
@@ -241,6 +238,7 @@ exports.forgotPassword = async (req, res, next) => {
 
   // Generate the random reset token
   const resetToken = user.createPasswordResetToken();
+  console.log(resetToken,"resetToken");
   await user.save({ validateBeforeSave: false });
   
   try {

@@ -82,6 +82,15 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("save", async function (next) {
+  // only run this function if passwordConfirm is updated or modified
+  if (!this.isModified("passwordConfirm") || !this.passwordConfirm) return next();
+
+  // encrypt password >> hash the password with the cost of 12 [8,16]
+  this.passwordConfirm = await bcrypt.hash(this.passwordConfirm, 12);
+  next();
+});
+
 userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew || !this.password) return next();
 
