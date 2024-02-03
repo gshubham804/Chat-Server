@@ -1,9 +1,9 @@
 const brevo = require('@getbrevo/brevo');
 const dotenv = require("dotenv");
 dotenv.config({ path: "../config.env" });
-const otpTemplate = require("../Templates/Mail/otp");
 
-function sendTransactionalEmail(username, otp, senderEmail) {
+function sendTransactionalEmail(username, sendingVariableValue, senderEmail, emailTemplate) {
+
   return new Promise((resolve, reject) => {
     let apiInstance = new brevo.TransactionalEmailsApi();
     let apiKey = apiInstance.authentications['apiKey'];
@@ -12,7 +12,7 @@ function sendTransactionalEmail(username, otp, senderEmail) {
     let sendSmtpEmail = new brevo.SendSmtpEmail();
 
     sendSmtpEmail.subject ="Your verification code for Chat-Server" ;
-    sendSmtpEmail.htmlContent = otpTemplate(username,otp);
+    sendSmtpEmail.htmlContent = emailTemplate(username,sendingVariableValue);
     sendSmtpEmail.sender = { "name": "Chat-Server", "email": "techbtechblog@gmail.com" };
     sendSmtpEmail.to = [
       { "email": senderEmail, "name": username }
