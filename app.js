@@ -42,14 +42,9 @@ const limiter = rateLimit({
 
 app.use("/chatapp", limiter);
 
-app.use(routes)
+app.use(routes);
 
 module.exports = app;
-
-
-
-
-
 
 // express-generator
 // what is the use of views in this folder structure
@@ -60,7 +55,4 @@ module.exports = app;
 // protected route and also check in luster backend repo
 // learn how to make sending file in postman
 // improved email otp html template
-
-
-
-
+// removed OTP direct from mailer.js and it pass an argument

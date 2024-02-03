@@ -10,6 +10,7 @@ const filterObj = require("../utils/filterObj");
 const { promisify } = require("util");
 const otp = require("../Templates/Mail/otp");
 const sendTransactionalEmail = require("../services/mailer");
+const AppError = require("../utils/appError");
 
 const signToken = (userId) => jwt.sign({ userId }, process.env.JWT_SECRET);
 // Register a new user
