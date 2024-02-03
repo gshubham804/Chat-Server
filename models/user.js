@@ -60,6 +60,13 @@ const userSchema = new mongoose.Schema({
   otp_expiry_time: {
     type: Date,
   },
+  socket_id: {
+    type: String,
+  },
+  friends: [{
+    type: mongoose.Schema.ObjectId,
+      ref: "User",
+  }],
 });
 
 // Hooks >> PreHooks >> PostHooks
@@ -84,15 +91,17 @@ userSchema.pre("save", async function (next) {
 
 userSchema.pre("save", async function (next) {
   // only run this function if passwordConfirm is updated or modified
-  if (!this.isModified("passwordConfirm") || !this.passwordConfirm) return next();
+  if (!this.isModified("passwordConfirm") || !this.passwordConfirm)
+    return next();
 
   // encrypt password >> hash the password with the cost of 12 [8,16]
   this.passwordConfirm = await bcrypt.hash(this.passwordConfirm, 12);
   next();
 });
 
-userSchema.pre('save', function(next) {
-  if (!this.isModified('password') || this.isNew || !this.password) return next();
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew || !this.password)
+    return next();
 
   this.passwordChangedAt = Date.now() - 1000;
   next();

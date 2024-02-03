@@ -54,5 +54,4 @@ module.exports = app;
 // Route handlers
 // protected route and also check in luster backend repo
 // learn how to make sending file in postman
-// improved email otp html template
-// removed OTP direct from mailer.js and it pass an argument
+// virtual fields in schema
