@@ -6,6 +6,7 @@ const app = require("./app");
 const http = require("http");
 const User = require("./models/user");
 const FriendRequest = require("./models/friendRequest");
+const path = require("path");
 
 // creating the instance of io
 const server = http.createServer(app);
@@ -50,7 +51,7 @@ io.on("connection", async (socket) => {
   console.log(`user is connected at ${socket_id}`);
 
   if (Boolean(user_id)) {
-    await User.findByIdAndUpdate(user_id, { socket_id });
+    await User.findByIdAndUpdate(user_id, { socket_id, status: "Online" });
   }
 
   // socket event listeners here...
@@ -102,8 +103,55 @@ io.on("connection", async (socket) => {
     });
   });
 
-  //
-  socket.on("end", function () {
+  // handle text/link messages
+
+  socket.on("text_message", async (data) => {
+    console.log(data, "received message");
+
+    // data {to,from,text}
+
+    // create a new conversation if it doesn't exist yet or add new message to the messages list
+
+    // save to db
+
+    // emit incoming message =>> recipient user
+
+    // emit outgoing message =>>sender user
+  });
+
+  socket.on("file_message", async (data) => {
+    console.log(data, "file_message");
+    // data {to,from,text,file}
+    // get the file extension
+
+    const fileExtension = path.extname(data.file.name);
+
+    // generate a unique file name
+    const fileName = `${Date.now()}_${Math.floor(
+      Math.random() * 10000
+    )}${fileExtension}`;
+
+    // upload file amazon s3
+
+    // create a new conversation if it doesn't exist yet or add new message to the messages list
+
+    // save to db
+
+    // emit incoming message =>> recipient user
+
+    // emit outgoing message =>>sender user
+  });
+
+  // disconnect the socket
+  socket.on("end", async (data) => {
+    // find user by id and set the status to offline
+    if (data.user_id) {
+      await User.findByIdAndUpdate(data.user_id, {
+        status: "offline",
+      });
+    }
+
+    // going to broadcast the user is disconnected
     console.log("Closing Connection");
     socket.disconnect(0);
   });
