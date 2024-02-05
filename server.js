@@ -5,6 +5,8 @@ dotenv.config({ path: "./config.env" });
 const app = require("./app");
 const http = require("http");
 const User = require("./models/user");
+
+// creating the instance of io
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -34,6 +36,8 @@ server.listen(port, () => {
   console.log(`App running on port ${port} ...`);
 });
 
+// it is fired when client try to connect
+
 io.on("connection", async (socket) => {
   const user_id = socket.handshake.query["user_id"];
   const socket_id = socket.id;
@@ -53,8 +57,11 @@ process.on("unhandledRejection", (err) => {
 
 // socket event listeners here...
 
-socket.on("friend_request", async (data) => {
+io.on("friend_request", async (data) => {
   console.log(data.to, "data to");
   const to = await User.findById(data.to);
+
+  // io.to =>> here we used broadcast features of socket
+
   io.to(to.socket_id).emit("new_friend_request", {});
 });
