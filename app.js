@@ -8,6 +8,7 @@ const xss = require("xss");
 const cors = require("cors");
 const app = express();
 const routes = require("./routes/index");
+const cookieParser = require("cookie-parser");
 
 app.use(
   express.urlencoded({
@@ -29,6 +30,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(cookieParser());
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));

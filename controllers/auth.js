@@ -189,29 +189,29 @@ exports.protect = async (req, res, next) => {
   // Getting token JWT  and check if it's there
 
   let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
+    console.log("enter in IF part")
     token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies.jwt) {
+    console.log("enter in ELSE part")
     token = req.cookies.jwt;
   }
 
   if (!token) {
-    return next(
-      new AppError(`You are not logged in! Please log in to get access.`, 401)
-    );
+    return res.status(401).json({
+      message: "You are not logged in! Please log in to get access.",
+    });
   }
 
   // verification of token
 
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
   // Check  if user still exist
 
-  const this_user = await User.findById(decoded.id);
+  const this_user = await User.findById(decoded.userId);
   if (!this_user) {
     return next(
       new AppError(
