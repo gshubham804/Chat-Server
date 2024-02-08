@@ -1,7 +1,3 @@
-// create a class for sending again and again res.status(400).json({
-// status:"",message:"",
-// })
-
 const jwt = require("jsonwebtoken");
 const otpGenerator = require("otp-generator");
 const crypto = require("crypto");
@@ -193,10 +189,8 @@ exports.protect = async (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    console.log("enter in IF part")
     token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies.jwt) {
-    console.log("enter in ELSE part")
     token = req.cookies.jwt;
   }
 
