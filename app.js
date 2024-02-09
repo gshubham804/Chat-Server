@@ -44,6 +44,10 @@ const limiter = rateLimit({
 
 app.use("/chatapp", limiter);
 
+// Define a simple route
+app.get('/', (req, res) => {
+  res.send('Hello, this is a simple Express API!');
+});
 app.use(routes);
 
 module.exports = app;
