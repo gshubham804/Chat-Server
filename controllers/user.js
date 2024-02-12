@@ -1,6 +1,14 @@
 const FriendRequest = require("../models/friendRequest");
 const User = require("../models/user");
+const catchAsync = require("../utils/catchAsync");
 const filterObj = require("../utils/filterObj");
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    data: req.user,
+  });
+});
 
 exports.updateMe = async (req, res, next) => {
   const { user } = req.body;

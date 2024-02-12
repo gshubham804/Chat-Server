@@ -115,7 +115,6 @@ io.on("connection", async (socket) => {
   //   // handle text/link messages
 
   socket.on("text_message", async (data) => {
-    console.log(data);
 
     // data {to,from,message, conversation_id, type}
     const { message, conversation_id, from, to, type } = data;
