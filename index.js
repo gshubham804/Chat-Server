@@ -8,12 +8,11 @@ const User = require("./models/user");
 const FriendRequest = require("./models/friendRequest");
 const path = require("path");
 const oneToOneMessage = require("./models/oneToOneMessage");
-
 const server = http.createServer(app);
 
 // creating the instance of io
 const io = new Server(server, {
-  cors: { origin: process.env.BASE_URL, methods: ["GET", "POST"] },
+  cors: { origin: process.env.BASE_URL, methods: ["GET", "POST"],credentials: true },
 });
 
 process.on("uncaughtException", (err) => {
