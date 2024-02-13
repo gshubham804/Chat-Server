@@ -13,7 +13,7 @@ const server = http.createServer(app);
 
 // creating the instance of io
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { origin: process.env.BASE_URL, methods: ["GET", "POST"] },
 });
 
 process.on("uncaughtException", (err) => {
