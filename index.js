@@ -9,9 +9,9 @@ const FriendRequest = require("./models/friendRequest");
 const path = require("path");
 const oneToOneMessage = require("./models/oneToOneMessage");
 
-// creating the instance of io
 const server = http.createServer(app);
 
+// creating the instance of io
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
