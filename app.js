@@ -4,12 +4,10 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const bodyParser = require("body-parser");
-const xss = require("xss-clean");
 const cors = require("cors");
 const app = express();
 const routes = require("./routes/index");
 const cookieParser = require("cookie-parser");
-const session = require("cookie-session");
 
 app.use(
   express.urlencoded({
@@ -17,6 +15,8 @@ app.use(
   })
 );
 
+app.use(mongoSanitize());
+//   app.use(xss());
 app.use(
   cors({
     origin: "*",
@@ -25,8 +25,6 @@ app.use(
   })
 );
 
-app.use(mongoSanitize());
-app.use(xss());
 app.use(express.json({ limit: "10kb" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -36,18 +34,6 @@ app.use(cookieParser());
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-
-app.use(
-  session({
-    secret: "keyboard cat",
-    proxy: true,
-    resave: true,
-    saveUnintialized: true,
-    cookie: {
-      secure: false,
-    },
-  })
-);
 
 const limiter = rateLimit({
   max: 3000,
