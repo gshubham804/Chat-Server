@@ -9,6 +9,8 @@ const AppError = require("../utils/appError");
 const otpTemplate = require("../Templates/Mail/otp");
 const resetPasswordTemplate = require("../Templates/Mail/resetPassword");
 const catchAsync = require("../utils/catchAsync");
+const dotenv = require("dotenv");
+dotenv.config({ path: "../config.env" });
 
 const signToken = (userId) => jwt.sign({ userId }, process.env.JWT_SECRET);
 // Register a new user
@@ -241,7 +243,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   try {
     // send email with reset URL
-    const resetURL = `http://localhost:3000/auth/new-password?token=${resetToken}`;
+    const resetURL = `${process.env.BASE_URL}/auth/new-password?token=${resetToken}`;
 
     await sendTransactionalEmail(
       user.firstName,
